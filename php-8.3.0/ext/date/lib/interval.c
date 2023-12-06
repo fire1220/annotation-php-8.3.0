@@ -26,6 +26,7 @@
 #include "timelib_private.h"
 #include <math.h>
 
+// 注释：调换两个时间对象
 static void swap_times(timelib_time **one, timelib_time **two, timelib_rel_time *rt)
 {
 	timelib_time *swp;
@@ -36,15 +37,18 @@ static void swap_times(timelib_time **one, timelib_time **two, timelib_rel_time 
 	rt->invert = 1;
 }
 
+// 注释：调换连个时间对象，确保one永远小于two
 static void sort_old_to_new(timelib_time **one, timelib_time **two, timelib_rel_time *rt)
 {
 	/* Check whether date/times need to be inverted. If both times are
 	 * TIMELIB_ZONETYPE_ID times with the same TZID, we use the y-s + us fields. */
+	// 注释：如果两个时间的时区相同时(时区标识符和时区值相同)，进行比较
 	if (
 		(*one)->zone_type == TIMELIB_ZONETYPE_ID &&
 		(*two)->zone_type == TIMELIB_ZONETYPE_ID &&
 		(strcmp((*one)->tz_info->name, (*two)->tz_info->name) == 0)
 	) {
+	    // 注释：判断one是否大于two
 		if (
 			((*one)->y > (*two)->y) ||
 			((*one)->y == (*two)->y && (*one)->m > (*two)->m) ||
@@ -54,23 +58,25 @@ static void sort_old_to_new(timelib_time **one, timelib_time **two, timelib_rel_
 			((*one)->y == (*two)->y && (*one)->m == (*two)->m && (*one)->d == (*two)->d && (*one)->h == (*two)->h && (*one)->i == (*two)->i && (*one)->s > (*two)->s) ||
 			((*one)->y == (*two)->y && (*one)->m == (*two)->m && (*one)->d == (*two)->d && (*one)->h == (*two)->h && (*one)->i == (*two)->i && (*one)->s == (*two)->s && (*one)->us > (*two)->us)
 		) {
-			swap_times(one, two, rt);
+			swap_times(one, two, rt); // 注释：调换两个时间对象，确保one < tow
 		}
 		return;
 	}
 
 	/* Fall back to using the SSE instead to rearrange */
+	// 注释：通过时间戳和微秒进行比较(秒级别的时间戳为SSE)
 	if (
 		((*one)->sse > (*two)->sse) ||
 		((*one)->sse == (*two)->sse && (*one)->us > (*two)->us)
 	) {
-		swap_times(one, two, rt);
+		swap_times(one, two, rt); // 注释：调换两个时间对象
 	}
 }
 
+// 注释：两个时间类型的比较
 static timelib_rel_time *timelib_diff_with_tzid(timelib_time *one, timelib_time *two)
 {
-	timelib_rel_time *rt;
+	timelib_rel_time *rt; // 注释：定义返回的时间类型
 	timelib_sll       dst_corr = 0, dst_h_corr = 0, dst_m_corr = 0;
 	int32_t           trans_offset;
 	timelib_sll       trans_transition_time;
@@ -78,13 +84,14 @@ static timelib_rel_time *timelib_diff_with_tzid(timelib_time *one, timelib_time 
 	rt = timelib_rel_time_ctor();
 	rt->invert = 0;
 
-	sort_old_to_new(&one, &two, rt);
+	sort_old_to_new(&one, &two, rt); // 注释：调换两个时间对象，确保one永远小于two
 
 	/* Calculate correction for UTC offset changes between first and second SSE */
-	dst_corr = two->z - one->z;
-	dst_h_corr = dst_corr / 3600;
-	dst_m_corr = (dst_corr % 3600) / 60;
+	dst_corr = two->z - one->z;             // 注释：时区偏移量相减
+	dst_h_corr = dst_corr / 3600;           // 注释：时区偏移的小时
+	dst_m_corr = (dst_corr % 3600) / 60;    // 注释：时区偏移的秒
 
+	// 注释：时间分别相减
 	rt->y = two->y - one->y;
 	rt->m = two->m - one->m;
 	rt->d = two->d - one->d;
@@ -93,7 +100,9 @@ static timelib_rel_time *timelib_diff_with_tzid(timelib_time *one, timelib_time 
 	rt->s = two->s - one->s;
 	rt->us = two->us - one->us;
 
-	rt->days = timelib_diff_days(one, two);
+	rt->days = timelib_diff_days(one, two); // 注释：计算相差的天数
+
+	// 注释：下面是对时区进行处理
 
 	/* Fall Back: Cater for transition period, where rt->invert is 0, but there are negative numbers */
 	if (two->sse < one->sse) {
@@ -143,12 +152,14 @@ static timelib_rel_time *timelib_diff_with_tzid(timelib_time *one, timelib_time 
 	return rt;
 }
 
+// 注释：(两个时间类型比较)函数date_diff和(new Datetime())->diff的实现
 timelib_rel_time *timelib_diff(timelib_time *one, timelib_time *two)
 {
-	timelib_rel_time *rt;
+	timelib_rel_time *rt; // 注释：定义时间类型的返回值
 
+	// 注释：如果两个时间的时区都是时区标识符，并且时区的名称一致
 	if (one->zone_type == TIMELIB_ZONETYPE_ID && two->zone_type == TIMELIB_ZONETYPE_ID && strcmp(one->tz_info->name, two->tz_info->name) == 0) {
-		return timelib_diff_with_tzid(one, two);
+		return timelib_diff_with_tzid(one, two); // 注释：两个时间类型比较
 	}
 
 	rt = timelib_rel_time_ctor();
@@ -178,11 +189,12 @@ timelib_rel_time *timelib_diff(timelib_time *one, timelib_time *two)
 }
 
 
+// 注释：计算相差的天数
 int timelib_diff_days(timelib_time *one, timelib_time *two)
 {
 	int days = 0;
 
-	if (timelib_same_timezone(one, two)) {
+	if (timelib_same_timezone(one, two)) { // 注释：如果时区相等
 		timelib_time *earliest, *latest;
 		double earliest_time, latest_time;
 
@@ -193,15 +205,16 @@ int timelib_diff_days(timelib_time *one, timelib_time *two)
 			earliest = two;
 			latest = one;
 		}
+		// 注释：分别转换成小时
 		timelib_hmsf_to_decimal_hour(earliest->h, earliest->i, earliest->s, earliest->us, &earliest_time);
 		timelib_hmsf_to_decimal_hour(latest->h, latest->i, latest->s, latest->us, &latest_time);
 
-		days = llabs(timelib_epoch_days_from_time(one) - timelib_epoch_days_from_time(two));
-		if (latest_time < earliest_time && days > 0) {
+		days = llabs(timelib_epoch_days_from_time(one) - timelib_epoch_days_from_time(two)); // 注释：两个天相减
+		if (latest_time < earliest_time && days > 0) { // 注释：如果小时位有第一个时间的小时小于第二个并且天数大于1天时，需要减去一天(因为还不到一整天)
 			days--;
 		}
 	} else {
-		days = fabs(floor(one->sse - two->sse) / 86400);
+		days = fabs(floor(one->sse - two->sse) / 86400); // 注释：时间戳相减然后取绝对值
 	}
 
 	return days;

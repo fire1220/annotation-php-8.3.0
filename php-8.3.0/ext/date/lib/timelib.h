@@ -186,9 +186,10 @@ typedef struct _timelib_posix_transitions {
 	timelib_sll types[6];
 } timelib_posix_transitions;
 
+// 注释：时区结构体
 typedef struct _timelib_tzinfo
 {
-	char    *name;
+	char    *name; // 注释：时区的名称
 	struct {
 		uint32_t ttisgmtcnt;
 		uint32_t ttisstdcnt;
@@ -248,24 +249,25 @@ typedef struct _timelib_time_offset {
 	timelib_sll  transition_time;
 } timelib_time_offset;
 
+// 注释：时间类型
 typedef struct _timelib_time {
 	timelib_sll      y, m, d;     /* Year, Month, Day */
 	timelib_sll      h, i, s;     /* Hour, mInute, Second */
-	timelib_sll      us;          /* Microseconds */
-	int              z;           /* UTC offset in seconds */
+	timelib_sll      us;          // 注释：微秒 /* Microseconds */
+	int              z;           // 注释：UTC偏移量（秒） /* UTC offset in seconds */
 	char            *tz_abbr;     /* Timezone abbreviation (display only) */
-	timelib_tzinfo  *tz_info;     /* Timezone structure */
+	timelib_tzinfo  *tz_info;     // 注释：时区结构 /* Timezone structure */
 	signed int       dst;         /* Flag if we were parsing a DST zone */
 	timelib_rel_time relative;
 
-	timelib_sll      sse;         /* Seconds since epoch */
+	timelib_sll      sse;        // 注释：秒级别的时间戳  /* Seconds since epoch */
 
 	unsigned int   have_time, have_date, have_zone, have_relative, have_weeknr_day;
 
 	unsigned int   sse_uptodate; /* !0 if the sse member is up to date with the date/time members */
 	unsigned int   tim_uptodate; /* !0 if the date/time members are up to date with the sse member */
 	unsigned int   is_localtime; /*  1 if the current struct represents localtime, 0 if it is in GMT */
-	unsigned int   zone_type;    /*  1 time offset,
+	unsigned int   zone_type;    /*  1 time offset,             // 注释：时区类型1时间偏移量3时区标识符2时区缩写
 	                              *  3 TimeZone identifier,
 	                              *  2 TimeZone abbreviation */
 } timelib_time;
@@ -324,9 +326,9 @@ typedef struct _timelib_abbr_info {
 #define TIMELIB_ERR_NUMBER_OUT_OF_RANGE        0x226
 
 #define TIMELIB_ZONETYPE_NONE   0
-#define TIMELIB_ZONETYPE_OFFSET 1
-#define TIMELIB_ZONETYPE_ABBR   2
-#define TIMELIB_ZONETYPE_ID     3
+#define TIMELIB_ZONETYPE_OFFSET 1 // 注释：时间偏移量
+#define TIMELIB_ZONETYPE_ABBR   2 // 注释：时区缩写
+#define TIMELIB_ZONETYPE_ID     3 // 注释：时区标识符
 
 typedef struct _timelib_error_message {
 	int         error_code;

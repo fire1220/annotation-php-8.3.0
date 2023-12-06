@@ -952,12 +952,14 @@ timelib_sll timelib_get_current_offset(timelib_time *t)
 	}
 }
 
+// 注释：判断时间对象的时区是否相等
 int timelib_same_timezone(timelib_time *one, timelib_time *two)
 {
-    if (one->zone_type != two->zone_type) {
+    if (one->zone_type != two->zone_type) { // 注释：时区的类型是否相等
         return 0;
     }
 
+    // 注释：时区类型是时区缩写或时区偏移量时
     if (one->zone_type == TIMELIB_ZONETYPE_ABBR || one->zone_type == TIMELIB_ZONETYPE_OFFSET) {
         if ((one->z + (one->dst * 3600)) == (two->z + (two->dst * 3600))) {
             return 1;

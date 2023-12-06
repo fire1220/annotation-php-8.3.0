@@ -3756,6 +3756,7 @@ PHP_FUNCTION(date_timestamp_get)
 /* }}} */
 
 /* {{{ Returns the difference between two DateTime objects. */
+// 注释：函数date_diff和(new Datetime())->diff的实现
 PHP_FUNCTION(date_diff)
 {
 	zval         *object1, *object2;
@@ -3773,7 +3774,7 @@ PHP_FUNCTION(date_diff)
 
 	php_date_instantiate(date_ce_interval, return_value);
 	interval = Z_PHPINTERVAL_P(return_value);
-	interval->diff = timelib_diff(dateobj1->time, dateobj2->time);
+	interval->diff = timelib_diff(dateobj1->time, dateobj2->time); // 注释：主要实现函数
 	if (absolute) {
 		interval->diff->invert = 0;
 	}
