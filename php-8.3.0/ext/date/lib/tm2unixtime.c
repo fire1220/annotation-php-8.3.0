@@ -69,6 +69,7 @@ static void dec_month(timelib_sll *y, timelib_sll *m)
 	}
 }
 
+// 注释：计算天对月的修正
 static void do_range_limit_days_relative(timelib_sll *base_y, timelib_sll *base_m, timelib_sll *y, timelib_sll *m, timelib_sll *d, timelib_sll invert)
 {
 	timelib_sll leapyear;
@@ -190,14 +191,14 @@ static void do_adjust_for_weekday(timelib_time* time)
 // 注释：对月日时分秒相互影响做调整
 void timelib_do_rel_normalize(timelib_time *base, timelib_rel_time *rt)
 {
-	do_range_limit(0, 1000000, 1000000, &rt->us, &rt->s); 	// 注释：微淼对秒的影响修正
+	do_range_limit(0, 1000000, 1000000, &rt->us, &rt->s); 	// 注释：微秒对秒的影响修正
 	do_range_limit(0, 60, 60, &rt->s, &rt->i); 				// 注释：秒对分的修正
 	do_range_limit(0, 60, 60, &rt->i, &rt->h); 				// 注释：分对小时的修正
 	do_range_limit(0, 24, 24, &rt->h, &rt->d); 				// 注释：小时对天的修正
 	do_range_limit(0, 12, 12, &rt->m, &rt->y); 				// 注释：月对年的修改
 
-	do_range_limit_days_relative(&base->y, &base->m, &rt->y, &rt->m, &rt->d, rt->invert);
-	do_range_limit(0, 12, 12, &rt->m, &rt->y);
+	do_range_limit_days_relative(&base->y, &base->m, &rt->y, &rt->m, &rt->d, rt->invert); // 注释：计算天对月的修正
+	do_range_limit(0, 12, 12, &rt->m, &rt->y); // 注释：从新计算月对年的修正
 }
 
 static void magic_date_calc(timelib_time *time)
