@@ -102,7 +102,6 @@ static timelib_rel_time *timelib_diff_with_tzid(timelib_time *one, timelib_time 
 
 	rt->days = timelib_diff_days(one, two); // 注释：计算相差的天数
 
-	// 注释：下面是对时区进行处理
 
 	/* Fall Back: Cater for transition period, where rt->invert is 0, but there are negative numbers */
 	if (two->sse < one->sse) {
@@ -114,7 +113,7 @@ static timelib_rel_time *timelib_diff_with_tzid(timelib_time *one, timelib_time 
 		rt->invert = 1 - rt->invert;
 	}
 
-	timelib_do_rel_normalize(rt->invert ? one : two, rt);
+	timelib_do_rel_normalize(rt->invert ? one : two, rt); // 注释：对月日时分秒相互影响做调整
 
 	if (one->dst == 1 && two->dst == 0) { /* Fall Back */
 		if (two->tz_info) {

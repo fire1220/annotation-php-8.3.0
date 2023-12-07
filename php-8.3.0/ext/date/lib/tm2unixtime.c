@@ -29,23 +29,25 @@
 static int days_in_month_leap[13] = {  31,  31,  29,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31 };
 static int days_in_month[13]      = {  31,  31,  28,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31 };
 
+// 注释：对时间月时分秒的修正(a的值会影响b的值)(修改a和b)(a可能是负数也可能是0)
 static void do_range_limit(timelib_sll start, timelib_sll end, timelib_sll adj, timelib_sll *a, timelib_sll *b)
 {
-	if (*a < start) {
+	if (*a < start) { // 注释：时间和天为负数时或者月份为0时候执行
 		/* We calculate 'a + 1' first as 'start - *a - 1' causes an int64_t overflows if *a is
 		 * LONG_MIN. 'start' is 0 in this context, and '0 - LONG_MIN > LONG_MAX'. */
 		timelib_sll a_plus_1 = *a + 1;
 
-		*b -= (start - a_plus_1) / adj + 1;
+		// 注释：成为负数的a_plus_1根据adj向上取整，然后用b减去，实现秒分时月时间的相减去位的作用
+		*b -= (start - a_plus_1) / adj + 1;  // 注释：start的入参是0或者1，这里就是单纯的 减去1
 
 		/* This code add the extra 'adj' separately, as otherwise this can overflow int64_t in
 		 * situations where *b is near LONG_MIN. */
 		*a += adj * ((start - a_plus_1) / adj);
-		*a += adj;
+		*a += adj; // 注释：修正a的数据(a是负数或者为0,0时是真的月运算的，是0则应该显示为12,后面有减去,负数表示时分秒)
 	}
-	if (*a >= end) {
-		*b += *a / adj;
-		*a -= adj * (*a / adj);
+	if (*a >= end) { // 注释：只有a是12的时候会命中这里
+		*b += *a / adj; // 注释：(a是12时)b加1
+		*a -= adj * (*a / adj); // 注释：此时a为11
 	}
 }
 
@@ -185,13 +187,14 @@ static void do_adjust_for_weekday(timelib_time* time)
 	time->relative.have_weekday_relative = 0;
 }
 
+// 注释：对月日时分秒相互影响做调整
 void timelib_do_rel_normalize(timelib_time *base, timelib_rel_time *rt)
 {
-	do_range_limit(0, 1000000, 1000000, &rt->us, &rt->s);
-	do_range_limit(0, 60, 60, &rt->s, &rt->i);
-	do_range_limit(0, 60, 60, &rt->i, &rt->h);
-	do_range_limit(0, 24, 24, &rt->h, &rt->d);
-	do_range_limit(0, 12, 12, &rt->m, &rt->y);
+	do_range_limit(0, 1000000, 1000000, &rt->us, &rt->s); 	// 注释：微淼对秒的影响修正
+	do_range_limit(0, 60, 60, &rt->s, &rt->i); 				// 注释：秒对分的修正
+	do_range_limit(0, 60, 60, &rt->i, &rt->h); 				// 注释：分对小时的修正
+	do_range_limit(0, 24, 24, &rt->h, &rt->d); 				// 注释：小时对天的修正
+	do_range_limit(0, 12, 12, &rt->m, &rt->y); 				// 注释：月对年的修改
 
 	do_range_limit_days_relative(&base->y, &base->m, &rt->y, &rt->m, &rt->d, rt->invert);
 	do_range_limit(0, 12, 12, &rt->m, &rt->y);
